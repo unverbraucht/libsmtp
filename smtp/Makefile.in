@@ -55,7 +55,7 @@ all: $(LIB_NAME).a
 # libMYPROG.a for the program and library.
 install: all
 	$(top_srcdir)/mkinstalldirs $(libdir)
-	$(INSTALL) libsmtp_mime.a $(libdir)/$(LIB_NAME).a
+	$(INSTALL) libsmtp.a $(libdir)/$(LIB_NAME).a
 
 uninstall:
 	/bin/rm -f $(libdir)/$(LIB_NAME).a

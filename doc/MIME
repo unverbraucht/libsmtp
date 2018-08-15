@@ -72,6 +72,13 @@ encoding, but many mail servers don't accept 8bit data (postfix, exim,
 Groupwise 5 just to name a few). If you know your data is only 7bit
 (i. e. US-ASCII character set text), you can use LIBSMTP_ENC_7BIT as encoding.
 
+IMPORTANT: You must pass data that is to be encoded as bas64 in buffers the
+size of multiples of 3, e.g. 300 bytes at once. Once you have passed data
+of a length not a multiple of 3, you cannot append data to this part
+anymore. This is a shortcoming of my base64 encoding algorithm, but
+I don't have a workaround at this moment. You might want to look at the
+multipart.c example to see how this works.
+
 Multipart bodies always have to use LIBSMTP_ENC_7BIT or LIBSMTP_ENC_8BIT. If
 one of the child body parts contains 8bit data, the Multipart has to be 8bit
 too. I entered LIBSMTP_ENC_BINARY too as demanded by RFC2045, but as they

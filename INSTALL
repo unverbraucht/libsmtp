@@ -1,29 +1,20 @@
 
-I think autoconf is above me. If anybody can help me with this, I might send
-him some non-virtual beer!! I must admit I'm far too lazy to get myself
-mired in autoconf docs at the moment. For now, you'll have to do the following
-steps to compile libsmtp:
+Thanks to all the nice people who helped me in my struggle with autoconf in
+the time the project was rotting on Berlios. Compilation now takes
 
-1) ./configure
-   Ignore all the error messages :)
+./configure
+make
 
-2) cd smtp
+Then, as root:
+make install
 
-3) make
-   Hold your breath now...
-
-4) cd ../mime
-
-5) make
-
-Now its up to you to do the rest, like copying the library to anyplace where
-its useful, i.e. /usr/lib. The "testapp" application demonstrates the use of
-libsmtp. You should adjust the mailserver address in "testapp.c" otherwise
-your mail will just be rejected. You can send to the addresses that are
-preconfigured in testapp.c if you like, they are sorted by my procmail and
-get thrown away, so don't worry. If you like, you can set a funny email (or
-your email address) in the From:-field, and my procmail script will save
-them. Maybe I'll create a gallery someday :)
+This will not install the examples (found in the examples folder). The "testapp"
+application demonstrates the use of libsmtp. You should adjust the mailserver
+address in "testapp.c" otherwise your mail will just be rejected. You can send
+to the addresses that are preconfigured in testapp.c if you like, they are sorted
+by my procmail and get thrown away, so don't worry. If you like, you can set a 
+funny email (or your email address) in the From:-field, and my procmail script
+will save them. Maybe I'll create a gallery someday :)
 
 The mimetest and multiparttest are demo apps for the new MIME stuff in
 libsmtp. They work for me, but might blow your coffee machine against your

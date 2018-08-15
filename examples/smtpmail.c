@@ -149,7 +149,7 @@ int main(void)
   }
 
   /* This starts the SMTP connection */
-  if (libsmtp_connect ("mail", 0, 0, mailsession))
+  if (libsmtp_connect ("container", 0, 0, mailsession))
     return report_error (mailsession);
     
   /* This will conduct the SMTP dialogue */

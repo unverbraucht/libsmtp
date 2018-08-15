@@ -80,7 +80,33 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
   /* This points into the data stream to the byte we are reading ATM */
   unsigned long int libsmtp_int_data_ptr=0;
   GString *libsmtp_int_gstring=g_string_new (NULL);
+  struct libsmtp_part_struct *libsmtp_temp_part;
+
+  libsmtp_temp_part=libsmtp_session->PartNow;
+
   
+  /* Check the sizes */
+  if (libsmtp_int_length % 3)
+  {
+    #ifdef LIBSMTP_DEBUG
+      printf ("libsmtp_send_base64: size not a multiple of 3, this could make problems.\n");
+    #endif
+    /* This has to be the end of this part */
+    libsmtp_temp_part->Base64_finished = 1;
+  }
+  else
+  {
+    if (libsmtp_temp_part->Base64_finished)
+    {
+      #ifdef LIBSMTP_DEBUG
+        printf ("libsmtp_send_base64: Already had a chunk for this part that was not a multiple of 3 in length. Cannot Append to it in Base64.\n");
+      #endif
+      /*After we already had an ending chunk for this part, we cannot go on */
+      return LIBSMTP_BASE64WRONGSIZE;
+    }
+  }
+  
+
   if (!libsmtp_int_dtable_init)
     libsmtp_int_init_base64();
 
@@ -95,7 +121,7 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
       libsmtp_int_char = libsmtp_int_data[libsmtp_int_data_ptr++];
 
       /* Lets check that we don't read over the end of the input buffer */
-      if (libsmtp_int_data_ptr > libsmtp_int_length)
+      if (libsmtp_int_data_ptr > libsmtp_int_length+1)
       {
         libsmtp_int_finished = 1;
         break;
@@ -141,7 +167,8 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
       /* If we have more than 2K of data, we send it */
       if (libsmtp_int_outbytes >=2048)
       {
-        libsmtp_int_ogroup[libsmtp_int_outbytes]='\0';
+/*        libsmtp_int_ogroup[libsmtp_int_outbytes]='\0';  */
+/*        libsmtp_int_outbytes--; */
         if (libsmtp_int_send_body (libsmtp_int_ogroup, libsmtp_int_outbytes, libsmtp_session))
           return LIBSMTP_ERRORSENDFATAL;
         

@@ -50,7 +50,7 @@ int libsmtp_int_send_quoted (char *libsmtp_int_data, unsigned long int libsmtp_i
   unsigned char libsmtp_int_ogroup[2056], libsmtp_int_obuffer[4];
   unsigned char libsmtp_int_char;
   int libsmtp_int_finished=0, libsmtp_int_outbytes=0, libsmtp_int_width=0;
-  int libsmtp_int_copied=0, libsmtp_int_newline=0;
+  int libsmtp_int_newline=0;
   /* This points into the data stream to the byte we are reading ATM */
   unsigned long int libsmtp_int_data_ptr=0;
   GString *libsmtp_int_gstring=g_string_new (NULL);

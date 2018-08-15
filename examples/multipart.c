@@ -155,7 +155,7 @@ int main(void)
   }
 
   /* This starts the SMTP connection */
-  if (libsmtp_connect ("mail",0,0,mailsession))
+  if (libsmtp_connect (server,0,0,mailsession))
   {
     stat_message (mailsession);
     return mailsession->ErrorCode;
@@ -235,11 +235,11 @@ int main(void)
   
   jpegbuffer=malloc (4098);
   
-  /* Read the file in 4k blocks */
-  while ((jpegfile_read = fread (jpegbuffer, 1, 4096, jpegfile)))
+  /* Read the file in blocks of 300 byte */
+  while ((jpegfile_read = fread (jpegbuffer, 1, 300, jpegfile)))
   {
     /* Then we send each chunk */
-    if (libsmtp_part_send (jpegbuffer, jpegfile_read, mailsession))
+    if (libsmtp_part_send (jpegbuffer, jpegfile_read-1, mailsession))
     {
       stat_message (mailsession);
       return mailsession->ErrorCode;

@@ -148,6 +148,8 @@
     int Charset;	/* optional charset for text MIME types */
     GString *Description;	/* MIME part description */
     GString *Boundary;	 /* optional Multipart boundary string */
+    int Base64_finished;	/* If the length of the last part was not
+    				   dividable by 3 */
   };
 
   struct libsmtp_part_struct *libsmtp_part_new \
@@ -189,6 +191,9 @@
   #define LIBSMTP_PARTSERR	2053	/* Generic parts error */
   #define LIBSMTP_PARTSFINISHED	2054	/* All parts finished */
   #define LIBSMTP_BADCHARSET	2055
+  #define LIBSMTP_BASE64WRONGSIZE	2056 /* Base64 chunks have to be in 
+  						chunks sizes that are multiple 
+  						of 3 e.g. 300 */
   
-  #define LIBSMTP_MAX_MIME_ERRNO	2055
+  #define LIBSMTP_MAX_MIME_ERRNO	2056
 /* #endif LIBSMTP_USE_MIME */

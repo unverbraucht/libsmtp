@@ -43,8 +43,8 @@ int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned i
   int libsmtp_bytes_read=0;     /* How many bytes read? */
   struct hostent *libsmtp_mailhost;	/* We need this to convert the hostname to an IP */
   struct sockaddr_in libsmtp_sock;	/* We need this for the connection */
-  char *libsmtp_temp_buffer[4096];	/* Temp string for reads and writes */
-  char *libsmtp_search_buffer;		/* Used for searching in strings */
+  gchar *libsmtp_temp_buffer[4096];	/* Temp string for reads and writes */
+//  char *libsmtp_search_buffer;		/* Used for searching in strings */
   GString *libsmtp_temp_gstring;	/* Temp gstring */
 
   /* We clear up the variable space and instantiate the GStrings */
@@ -69,6 +69,8 @@ int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned i
   /* Now we need to get the IP from the hostname... */
   if ((libsmtp_mailhost=gethostbyname((const char *)libsmtp_server))==NULL)
   {
+/*    printf ("Host %s not found with error ", libsmtp_server);
+    perror ("host"); */
     libsmtp_session->ErrorCode = LIBSMTP_HOSTNOTFOUND;
     close (libsmtp_socket);
     libsmtp_session->socket=0;
@@ -126,7 +128,7 @@ int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned i
 
   /* Ok, lets greet him back */
 
-  g_string_sprintf (libsmtp_temp_gstring, "EHLO %s\n", libsmtp_temp_buffer);
+  g_string_sprintf (libsmtp_temp_gstring, "EHLO %s\r\n", libsmtp_temp_buffer);
 
   if (libsmtp_int_send (libsmtp_temp_gstring, libsmtp_session, 2))
     return LIBSMTP_ERRORSENDFATAL;
@@ -142,28 +144,28 @@ int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned i
     /* Ok, he loves us. Lets parse the response for the capabilities. */
     
     if (strstr (libsmtp_session->LastResponse->str, "8BITMIME"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_8BIT;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_8BIT;
     
     if (strstr (libsmtp_session->LastResponse->str, "PIPELINING"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_PIPELINING;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_PIPELINING;
 
     if (strstr (libsmtp_session->LastResponse->str, "DSN"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_DSN;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_DSN;
 
     if (strstr (libsmtp_session->LastResponse->str, "STARTTLS"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_TLS;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_TLS;
 
     if (strstr (libsmtp_session->LastResponse->str, "AUTH"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_AUTH;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_AUTH;
 
     if (strstr (libsmtp_session->LastResponse->str, "SIZE"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_SIZE;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_SIZE;
 
     if (strstr (libsmtp_session->LastResponse->str, "ETRN"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_ETRN;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_ETRN;
 
     if (strstr (libsmtp_session->LastResponse->str, "ENHANCEDSTATUSCODES"))
-      libsmtp_session->serverflags || LIBSMTP_HAS_ENHANCEDSTATUSCODES;
+      libsmtp_session->serverflags |= LIBSMTP_HAS_ENHANCEDSTATUSCODES;
     
     /* Ok, now we're ready for business */
 
@@ -171,7 +173,7 @@ int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned i
   else
   {
     /* Ok, he doesn't understand EHLO, so we will send HELO instead */
-    g_string_sprintf (libsmtp_temp_gstring, "HELO %s\n", libsmtp_temp_buffer);
+    g_string_sprintf (libsmtp_temp_gstring, "HELO %s\r\n", libsmtp_temp_buffer);
 
     if (libsmtp_int_send (libsmtp_temp_gstring, libsmtp_session, 2))
       return LIBSMTP_ERRORSENDFATAL;

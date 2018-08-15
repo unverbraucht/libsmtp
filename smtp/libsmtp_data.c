@@ -63,7 +63,7 @@ struct libsmtp_session_struct *libsmtp_session_initialize (void)
 
 int libsmtp_free (struct libsmtp_session_struct *libsmtp_session)
 {
-  int libsmtp_temp;
+  unsigned int libsmtp_temp;
 
   /* Lets see if we gotta close the socket */
   
@@ -123,6 +123,7 @@ int libsmtp_set_environment (char *libsmtp_int_From, char *libsmtp_int_Subject,\
   
   g_string_assign (libsmtp_session->From, libsmtp_int_From);
   g_string_assign (libsmtp_session->Subject, libsmtp_int_Subject);
+  return LIBSMTP_NOERR;
 }
 
 int libsmtp_add_recipient (int libsmtp_int_rec_type, char *libsmtp_int_address,

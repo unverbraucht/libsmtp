@@ -53,6 +53,10 @@ send 7bit US-ASCII text only data. If this is not the case, you should
 configure the session with the MIME functions. Please see the file MIME for
 more information on this.
 
+WARNING: If you want to encode in base64, please note that the data to the
+part_send function has to be sent in a buffer the size of a multiple of 3,
+e.g. 300 bytes strings. This is a shortcoming of the encoding algorithm.
+
 
 
 SMTP CONNECTION
