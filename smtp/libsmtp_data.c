@@ -1,7 +1,7 @@
 /*
   libsmtp is a library to send mail via SMTP
     These are the utility data functions.
-   
+
 Copyright © 2001 Kevin Read <obsidian@berlios.de>
 
 This software is available under the GNU Lesser Public License as described
@@ -24,8 +24,10 @@ Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  U
 Kevin Read <obsidian@berlios.de>
 Thu Aug 16 2001 */
 
-#include <glib.h>
-
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../config.h"
 
 #include "libsmtp.h"
@@ -37,24 +39,19 @@ Thu Aug 16 2001 */
 struct libsmtp_session_struct *libsmtp_session_initialize (void)
 {
   struct libsmtp_session_struct *libsmtp_session;
-  
+
   /* We use calloc here to clear the memory. GLists are initialized when
      they point to NULL, so it must be cleared. */
   libsmtp_session = (struct libsmtp_session_struct *)calloc (1, sizeof(struct libsmtp_session_struct));
-  
+
   if (libsmtp_session == NULL)
     return NULL;
-  
-  /* The GStrings must be initialized */
-  libsmtp_session->From = g_string_new (NULL);
-  libsmtp_session->Subject = g_string_new (NULL);
-  libsmtp_session->LastResponse = g_string_new (NULL);
 
   #ifdef WITH_MIME
     libsmtp_session->Parts = NULL;
     libsmtp_session->NumParts = 0;
   #endif
-  
+
   return libsmtp_session;
 }
 
@@ -63,45 +60,34 @@ struct libsmtp_session_struct *libsmtp_session_initialize (void)
 
 int libsmtp_free (struct libsmtp_session_struct *libsmtp_session)
 {
-  unsigned int libsmtp_temp;
+  int libsmtp_temp;
+  struct libsmtp_recipient_struct *recipient_iterator, *next_recipient_iterator;
 
   /* Lets see if we gotta close the socket */
-  
   if (libsmtp_session->socket)
   {
     close (libsmtp_session->socket);
     libsmtp_session->socket=0;
   }
-  
-  /* All GStrings and GLists must be freed */
-  g_list_free (libsmtp_session->To);
-  g_list_free (libsmtp_session->CC);
-  g_list_free (libsmtp_session->BCC);
-  
-  /* Now we free all elements of the Lists we allocated with strdup */
-  libsmtp_session->ToResponse = g_list_first (libsmtp_session->ToResponse);
-  for (libsmtp_temp=0; libsmtp_temp<g_list_length (libsmtp_session->ToResponse); \
-       libsmtp_temp++)
-    free (g_list_nth_data (libsmtp_session->ToResponse, libsmtp_temp));
-  
-  libsmtp_session->CCResponse = g_list_first (libsmtp_session->CCResponse);
-  for (libsmtp_temp=0; libsmtp_temp<g_list_length (libsmtp_session->CCResponse); \
-       libsmtp_temp++)
-    free (g_list_nth_data (libsmtp_session->CCResponse, libsmtp_temp));
+  recipient_iterator = libsmtp_session->recipients;
 
-  libsmtp_session->BCCResponse = g_list_first (libsmtp_session->BCCResponse);
-  for (libsmtp_temp=0; libsmtp_temp<g_list_length (libsmtp_session->BCCResponse); \
-       libsmtp_temp++)
-    free (g_list_nth_data (libsmtp_session->BCCResponse, libsmtp_temp));
-  
-  g_list_free (libsmtp_session->ToResponse);
-  g_list_free (libsmtp_session->CCResponse);
-  g_list_free (libsmtp_session->BCCResponse);
-  
-  g_string_free (libsmtp_session->From,1);
-  g_string_free (libsmtp_session->Subject,1);
-  g_string_free (libsmtp_session->LastResponse,1);
-  
+  while (recipient_iterator)
+  {
+  	next_recipient_iterator = recipient_iterator;
+  	if (recipient_iterator->response_str)
+  		free (recipient_iterator->response_str);
+  	free (recipient_iterator);
+  	recipient_iterator = next_recipient_iterator;
+  }
+  libsmtp_session->recipients = NULL;
+
+
+  if (libsmtp_session->from)
+  	free (libsmtp_session->from);
+
+  if (libsmtp_session->subject)
+  	free (libsmtp_session->subject);
+
   /* Ok, lets free the malloced session struct */
   free (libsmtp_session);
 
@@ -115,58 +101,121 @@ int libsmtp_free (struct libsmtp_session_struct *libsmtp_session)
 int libsmtp_set_environment (char *libsmtp_int_From, char *libsmtp_int_Subject,\
       unsigned int libsmtp_int_flags, struct libsmtp_session_struct *libsmtp_session)
 {
-  if ((!strlen (libsmtp_int_From)) || (!strlen (libsmtp_int_Subject)))
+	uint32_t fromlength = strlen (libsmtp_int_From);
+	uint32_t subjectlength = strlen (libsmtp_int_Subject);
+  if ((!fromlength) || (!subjectlength))
   {
-    libsmtp_session->ErrorCode = LIBSMTP_BADARGS;
+    libsmtp_session->errorCode = LIBSMTP_BADARGS;
     return LIBSMTP_BADARGS;
   }
-  
-  g_string_assign (libsmtp_session->From, libsmtp_int_From);
-  g_string_assign (libsmtp_session->Subject, libsmtp_int_Subject);
+
+  // RFC2822 states a maxmimum line length of 998 octets. We enforce this here
+  // (maybe a bit too simply)
+  if ((fromlength > 991) || (subjectlength > 988))
+  {
+    libsmtp_session->errorCode = LIBSMTP_LINETOOLONG;
+    return LIBSMTP_LINETOOLONG;
+  }
+
+  if (libsmtp_session->from)
+  	free (libsmtp_session->from);
+
+  if (libsmtp_session->subject)
+  	free (libsmtp_session->subject);
+
+  libsmtp_session->subject = strdup (libsmtp_int_Subject);
+  libsmtp_session->from = strdup (libsmtp_int_From);
+
   return LIBSMTP_NOERR;
+
 }
+
+int libsmtp_ll_add (struct libsmtp_recipient_struct **base, struct libsmtp_recipient_struct *new)
+{
+	void *next = *base;
+	void *last;
+
+	// The base element might already be null
+	if (next)
+		new->next = next;
+	*base = new;
+}
+
+
 
 int libsmtp_add_recipient (int libsmtp_int_rec_type, char *libsmtp_int_address,
       struct libsmtp_session_struct *libsmtp_session)
 {
-  /* Do we need a copy? */
-  char *libsmtp_int_copy;
-  
+  struct libsmtp_recipient_struct *new_ll_entry;
+  uint32_t addresslength = strlen (libsmtp_int_address);
+
   /* Lets just check that rec_type isn't an invalid value */
   if ((libsmtp_int_rec_type < 0) || (libsmtp_int_rec_type > LIBSMTP_REC_MAX))
   {
-    libsmtp_session->ErrorCode = LIBSMTP_BADARGS;
+    libsmtp_session->errorCode = LIBSMTP_BADARGS;
     return LIBSMTP_BADARGS;
   }
 
   /* Zero length string as argument? */
-  if (!strlen (libsmtp_int_address))
+  if (!addresslength)
   {
-    libsmtp_session->ErrorCode = LIBSMTP_BADARGS;
+    libsmtp_session->errorCode = LIBSMTP_BADARGS;
     return LIBSMTP_BADARGS;
   }
-  
-  switch (libsmtp_int_rec_type)
+
+  // Enforce RFC 2822 max line length of 998 octets in a simple, brutal way
+  if (addresslength > 992)
   {
-    case (LIBSMTP_REC_TO):
-      libsmtp_int_copy = strdup (libsmtp_int_address);
-      libsmtp_session->To = g_list_append (libsmtp_session->To, libsmtp_int_copy);
-      break;
-
-    case (LIBSMTP_REC_CC):
-      libsmtp_session->CC = g_list_append (libsmtp_session->CC, libsmtp_int_copy);
-      break;
-
-    case (LIBSMTP_REC_BCC):
-      libsmtp_session->BCC = g_list_append (libsmtp_session->BCC, libsmtp_int_copy);
-      break;
-
-    default:
-      /* Lets just check that rec_type isn't an invalid value */
-      libsmtp_session->ErrorCode = LIBSMTP_BADARGS;
-      return LIBSMTP_BADARGS;
-      break;
+    libsmtp_session->errorCode = LIBSMTP_LINETOOLONG;
+    return LIBSMTP_LINETOOLONG;
   }
-  
+
+	// Check the type parameter for correctness
+	if ((libsmtp_int_rec_type != LIBSMTP_REC_TO) &&
+			(libsmtp_int_rec_type != LIBSMTP_REC_CC) &&
+			(libsmtp_int_rec_type != LIBSMTP_REC_BCC))
+	{
+		libsmtp_session->errorCode = LIBSMTP_BADARGS;
+		return LIBSMTP_BADARGS;
+	}
+
+	// Malloc a new linked list entry, which might fail
+  new_ll_entry = malloc (sizeof (struct libsmtp_recipient_struct));
+  if (!new_ll_entry)
+  {
+		libsmtp_session->errorCode = LIBSMTP_MALLOCFAIL;
+		return (LIBSMTP_MALLOCFAIL);
+	}
+	else
+	{
+		// So it worked ok. Copy the address
+  	new_ll_entry->address = strdup (libsmtp_int_address);
+
+  	// strdup might fail:
+  	if (!new_ll_entry->address)
+  	{
+  		// Yup, it did :(
+  		free (new_ll_entry);
+  		libsmtp_session->errorCode = LIBSMTP_MALLOCFAIL;
+  		return (LIBSMTP_MALLOCFAIL);
+  	}
+
+    // The type is ok, we can set it
+  	new_ll_entry->type = libsmtp_int_rec_type;
+
+  	switch (libsmtp_int_rec_type)
+  	{
+  		case LIBSMTP_REC_TO: libsmtp_session->num_to++; break;
+  		case LIBSMTP_REC_CC: libsmtp_session->num_cc++; break;
+  		case LIBSMTP_REC_BCC: libsmtp_session->num_bcc++; break;
+  	}
+
+  	// Fill in reasonable default values for the rest
+  	new_ll_entry->response_str = NULL;
+  	new_ll_entry->response_code = 0;
+
+  	libsmtp_ll_add (&(libsmtp_session->recipients), new_ll_entry);
+  }
+
   return LIBSMTP_NOERR;
 }

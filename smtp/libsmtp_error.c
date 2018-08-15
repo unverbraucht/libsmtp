@@ -1,6 +1,6 @@
 /*
   This is a library to send mail via SMTP
-   
+
 Copyright © 2001 Kevin Read <obsidian@berlios.de>
 
 This software is available under the GNU Lesser Public License as described
@@ -23,7 +23,8 @@ Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  U
 Kevin Read <obsidian@berlios.de>
 Thu Aug 16 2001 */
 
-#include <glib.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "../config.h"
 #include "libsmtp.h"
@@ -55,7 +56,7 @@ const char *libsmtp_strerr_strings_nonfatal[] = {
   "Server rejected QUIT command :-)"
 };
 
-const char *libsmtp_undef_errstr = "Undefined error";  
+const char *libsmtp_undef_errstr = "Undefined error";
 
 #define LIBSMTP_MAX_FATAL_ERRNO 9
 #define LIBSMTP_MIN_NONFATAL_ERRNO 1024
@@ -67,33 +68,33 @@ const char *libsmtp_strerr (struct libsmtp_session_struct *libsmtp_session)
      non-libsmtp functions from writing to these ...
      There are no higher error codes than the MIME ones */
   #ifdef WITH_MIME
-    if (libsmtp_session->ErrorCode > LIBSMTP_MAX_MIME_ERRNO)
+    if (libsmtp_session->errorCode > LIBSMTP_MAX_MIME_ERRNO)
     {
-      printf ("Undefined error code: %d\n", libsmtp_session->ErrorCode);
+      printf ("Undefined error code: %d\n", libsmtp_session->errorCode);
       return libsmtp_undef_errstr;
     }
   #else
     /* Or the nonfatal ones when not using MIME stuff */
-    if (libsmtp_session->ErrorCode > LIBSMTP_MAX_NONFATAL_ERRNO)
+    if (libsmtp_session->errorCode > LIBSMTP_MAX_NONFATAL_ERRNO)
     {
-      printf ("Undefined error code: %d\n", libsmtp_session->ErrorCode);
+      printf ("Undefined error code: %d\n", libsmtp_session->errorCode);
       return libsmtp_undef_errstr;
     }
   #endif
-  
+
   /* And there are no valid error codes between fatal and nonfatal */
-  if ((libsmtp_session->ErrorCode > LIBSMTP_MAX_FATAL_ERRNO) && \
-      (libsmtp_session->ErrorCode < LIBSMTP_MIN_NONFATAL_ERRNO))
+  if ((libsmtp_session->errorCode > LIBSMTP_MAX_FATAL_ERRNO) && \
+      (libsmtp_session->errorCode < LIBSMTP_MIN_NONFATAL_ERRNO))
   {
-    printf ("Undefined error code: %d\n", libsmtp_session->ErrorCode);
+    printf ("Undefined error code: %d\n", libsmtp_session->errorCode);
     return libsmtp_undef_errstr;
   }
-  
+
   /* Now send back the pointer - we have two tables */
-  if (libsmtp_session->ErrorCode > LIBSMTP_MAX_FATAL_ERRNO)
-    return libsmtp_strerr_strings_nonfatal [libsmtp_session->ErrorCode-1024];
+  if (libsmtp_session->errorCode > LIBSMTP_MAX_FATAL_ERRNO)
+    return libsmtp_strerr_strings_nonfatal [libsmtp_session->errorCode-1024];
   else
-    return libsmtp_strerr_strings_fatal [libsmtp_session->ErrorCode];
+    return libsmtp_strerr_strings_fatal [libsmtp_session->errorCode];
 }
 
 int libsmtp_errno (struct libsmtp_session_struct *libsmtp_session)
@@ -101,13 +102,13 @@ int libsmtp_errno (struct libsmtp_session_struct *libsmtp_session)
   /* This shouldn't really happen, but this is not C++, we can't prevent
      non-libsmtp functions from writing to these ...
      There are no higher error codes than the nonfatal ones */
-  if (libsmtp_session->ErrorCode > LIBSMTP_MAX_NONFATAL_ERRNO)
-    return LIBSMTP_UNDEFERR;
-  
-  /* And there are no valid error codes betwenn fatal and nonfatal */
-  if ((libsmtp_session->ErrorCode > LIBSMTP_MAX_FATAL_ERRNO) && \
-      (libsmtp_session->ErrorCode < LIBSMTP_MIN_NONFATAL_ERRNO))
+  if (libsmtp_session->errorCode > LIBSMTP_MAX_NONFATAL_ERRNO)
     return LIBSMTP_UNDEFERR;
 
-  return libsmtp_session->ErrorCode;
+  /* And there are no valid error codes betwenn fatal and nonfatal */
+  if ((libsmtp_session->errorCode > LIBSMTP_MAX_FATAL_ERRNO) && \
+      (libsmtp_session->errorCode < LIBSMTP_MIN_NONFATAL_ERRNO))
+    return LIBSMTP_UNDEFERR;
+
+  return libsmtp_session->errorCode;
 }

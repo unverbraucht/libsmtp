@@ -28,9 +28,11 @@ OPT=-g -O
 AR = ar
 AR_FLAGS = rc
 RANLIB = @RANLIB@
+
 CC = @CC@
 CFLAGS = -I. -I../include `glib-config --cflags` @CFLAGS@
 LDFLAGS = -L. -L../smtp -L../mime @LDFLAGS@
+LIBS = -lsmtp -lsmtp_mime -lglib @LIBS@
 INSTALL = @INSTALL@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -41,32 +43,27 @@ infodir = $(prefix)/info
 ifeq (@with_mime@,yes)
   SOURCES=smtpmail.c multipart.c singlepart.c
   OBJS=smtpmail.o multipart.o singlepart.o
-  APPS=smtpmail multipart singlepart
-  LIBS = -lsmtp -lsmtp_mime -lglib @LIBS@
 else
   SOURCES=smtpmail.c
   OBJS=smtpmail.o
-  APPS=smtpmail
-  LIBS = -lsmtp -lglib @LIBS@
 endif
 
 DOCS=
 MISC=configure mkinstalldirs install-sh aclocal.m4
 LIB_OBJS=
 
-all: $(APPS)
+all: singlepart multipart smtpmail
 
-ifeq (@with_mime@,yes)
 singlepart: singlepart.o
 	$(CC) $(CFLAGS) -o singlepart singlepart.o $(LIBS) $(LDFLAGS)
 
-
+ifeq (@with_mime@,yes)
 multipart: multipart.o
 	$(CC) $(CFLAGS) -o multipart multipart.o $(LIBS) $(LDFLAGS)
-endif
 
 smtpmail: smtpmail.o
-	$(CC) $(CFLAGS) -o smtpmail smtpmail.o $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -o smtpmail smtpmail.o $(LDFLAGS) -lsmtp -L`glib-config --libs` -lglib
+endif
 
 clean:
 	/bin/rm -f core *.o $(OBJS) $(LIB_OBJS) multipart singlepart \

@@ -1,0 +1,6 @@
+Name: libsmtp_mime
+Description: Smtp with mime Library
+Version: 0.8
+Requires: glib
+Libs: -L/usr/local/lib -lsmtp_mime
+Cflags: -I/usr/local/include/libsmtp_mime

@@ -1,6 +1,8 @@
 
 These examples aren't written very cleanly. They work though and should
-demonstrate main working principles of libsmtp.
+demonstrate main working principles of libsmtp. Please note that all these
+examples try to connect to a mailserver called mail!!! So please change that
+to the correct mailserver.
 
 multipart
 ---------

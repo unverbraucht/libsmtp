@@ -1,12 +1,12 @@
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 #ifndef LIB_SMTP_H
 
 #define LIB_SMTP_H
 
-#ifndef __G_LIB_H__
-  #include <glib.h>
-#endif
-
+#define LIBSMTP_BUFFER_SIZE	4096
 
 /* These flags show what the server can do */
 
@@ -73,41 +73,67 @@
 #define LIBSMTP_WONTACCEPTREC	1027
 #define LIBSMTP_BADSTAGE	1028
 #define LIBSMTP_REJECTQUIT	1029
+#define LIBSMTP_MALLOCFAIL 1030
+#define LIBSMTP_LINETOOLONG 1031
 
 /* Codes > 2048 are MIME errors and are defined in libsmtp_mime.h */
 
 #define LIBSMTP_UNDEFERR	10000 /* ErrorCode was undefined!! */
-/* This structure defines one libsmtp session */
 
+/* Ed Goforth <e.goforth@computer.org> */
+/* To automatically add an rfc822 compliant date header */
+/* LIBSMTP_DATE_STR_FMT is passed to strftime(3) so that a buffer can */
+/* be filled out in the correct format */
+#define LIBSMTP_DATE_STR_FMT  "%a, %d %b %Y %H:%M:%S %z (%Z)"
+/* LIBSMTP_DATA_STR_INIT is passed to g_string_new() so that a buffer of */
+/* the correct size can be allocated to store the date string */
+#define LIBSMTP_DATE_STR_INIT "Day, dd Mon YYYY hh:mm:ss -xxxx (TZZ)"
+
+/* Encode information about one recipient. Internally a linked list, each
+ * entry pointing to the next recipient struct entry */
+struct libsmtp_recipient_struct {
+	char *address;
+	uint8_t type;
+	uint16_t response_code;
+	char *response_str;
+	struct libsmtp_recipient_struct *next;
+};
+
+/* This structure defines one libsmtp session */
 struct libsmtp_session_struct {
   int serverflags;	/* Server capability flags */
   int socket;		/* socket handle */
 
-  GString *From;	/* From address */
-  GList *To;		/* All recipients addresses */
-  GList *CC;		/* All Carbon Copy recipients addresses */
-  GList *BCC;		/* All Blind Carbon Copy recipients addresses */
-  int NumFailedTo;	/* number of rejected recipients */
-  int NumFailedCC;	/* number of rejected CC recipients */
-  int NumFailedBCC;	/* number of rejected BCC recipients */
-  GList *ToResponse;	/* List of failed recipients containing the response for
-  			   each failure */
-  GList *CCResponse;	/* The same for CC recipients */
-  GList *BCCResponse;	/* And for BCC recipients */
+  char date[40]; /* rfc822 Date header */
 
-  GString *Subject;	/* Mail subject */
-  GString *LastResponse;	/* Last SMTP response string from server */
-  int LastResponseCode;	/* Last SMTP response code from server */
-  int ErrorCode;	/* Internal libsmtp error code from last error */
-  GString *ErrorModule;	/* Module were error was caused */
-  int Stage;		/* SMTP transfer stage */
+  char *from;	/* From address */
 
-  unsigned int DialogueSent;	/* Number of SMTP dialogue lines sent */
-  unsigned int DialogueBytes;	/* Bytes of SMTP dialogue data sent */
-  unsigned int HeadersSent;  	/* Number of header lines sent */
-  unsigned int HeaderBytes;	/* Bytes of header data sent */
-  unsigned long int BodyBytes;	/* Bytes of body data sent */
-  
+  // A structure recording the participants
+  struct libsmtp_recipient_struct *recipients;
+  uint32_t num_to;
+  uint32_t num_cc;
+  uint32_t num_bcc;
+
+  uint32_t num_failed_rec;
+
+  char *subject;	/* Mail subject */
+  char lastResponse[512];	/* Last SMTP response string from server */
+  int lastResponseCode;	/* Last SMTP response code from server */
+  int errorCode;	/* Internal libsmtp error code from last error */
+  char *errorModule;	/* Module were error was caused */
+  int stage;		/* SMTP transfer stage */
+
+  unsigned int dialogueSent;	/* Number of SMTP dialogue lines sent */
+  unsigned int dialogueBytes;	/* Bytes of SMTP dialogue data sent */
+  unsigned int headersSent;  	/* Number of header lines sent */
+  unsigned int headerBytes;	/* Bytes of header data sent */
+  unsigned long int bodyBytes;	/* Bytes of body data sent */
+
+  // Cheap trick to save on mallocs and such:
+  // We allocate a shared send and receive buffer
+  // This works quite well because RFC2822 enforces a maximum line length anyway
+  char buffer[LIBSMTP_BUFFER_SIZE];
+
   #ifdef WITH_MIME
     GNode *Parts;		/* N-Tree of body parts (MIME stuff) */
     int NumParts;		/* Number of body parts */
@@ -115,6 +141,8 @@ struct libsmtp_session_struct {
     GNode *PartNowNode;		/* Node of the part we are just sending */
   #endif
 };
+
+
 
 struct libsmtp_session_struct *libsmtp_session_initialize (void);
 
@@ -148,10 +176,14 @@ int libsmtp_free (struct libsmtp_session_struct *);
 
 /* internal functions */
 
-int libsmtp_int_send (GString *, struct libsmtp_session_struct *, int);
+int libsmtp_int_send (uint32_t, struct libsmtp_session_struct *, int);
 
-int libsmtp_int_read (GString *, struct libsmtp_session_struct *, int);
+int libsmtp_int_read (uint32_t *, struct libsmtp_session_struct *, int);
 
-int libsmtp_int_send_body (char *, unsigned long int, struct libsmtp_session_struct *);
+int libsmtp_int_send_body (uint32_t, struct libsmtp_session_struct *);
 
 #endif  /* LIB_SMTP_H */
+
+#ifdef __cplusplus
+ }
+#endif

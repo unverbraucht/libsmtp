@@ -149,7 +149,6 @@ struct libsmtp_part_struct *libsmtp_part_new \
   libsmtp_int_part->Encoding=libsmtp_int_encoding;
   libsmtp_int_part->Description=g_string_new (libsmtp_int_desc);
   libsmtp_int_part->Charset=libsmtp_int_charset;
-  libsmtp_int_part->Base64_finished=0;
 
   if (libsmtp_int_check_part (libsmtp_int_part))
   {
@@ -198,7 +197,9 @@ int libsmtp_mime_type_custom (char *libsmtp_int_custom_type, \
     return LIBSMTP_BADMIME;
     
   g_string_assign (libsmtp_int_part->CustomType, libsmtp_int_custom_type);
+
   return LIBSMTP_NOERR;
+
 }
 
 int libsmtp_mime_subtype_custom (char *libsmtp_int_custom_subtype, \
@@ -209,7 +210,9 @@ int libsmtp_mime_subtype_custom (char *libsmtp_int_custom_subtype, \
     return LIBSMTP_BADMIME;
     
   g_string_assign (libsmtp_int_part->CustomSubtype, libsmtp_int_custom_subtype);
+
   return LIBSMTP_NOERR;
+
 }
 
 
@@ -432,7 +435,9 @@ int libsmtp_int_nextpart (struct libsmtp_session_struct *libsmtp_session)
       }
     }
   }
+
   return LIBSMTP_NOERR;
+
 }
 
 
@@ -695,7 +700,6 @@ const char *libsmtp_int_lookup_mime_charset (struct libsmtp_part_struct *libsmtp
     else
       return NULL;
   }
-  return NULL;
 }
 
 const char *libsmtp_int_lookup_mime_encoding (struct libsmtp_part_struct *libsmtp_int_part)

@@ -130,7 +130,7 @@ int main(void)
   printf ("Text part added.\n");
 
   /* This starts the SMTP connection */
-  if (libsmtp_connect ("container",0,0,mailsession))
+  if (libsmtp_connect ("mail",0,0,mailsession))
   {
     printf ("An error occured while connecting:\n%s\nLast Response:%s\n", \
       libsmtp_strerr (mailsession), mailsession->LastResponse->str);

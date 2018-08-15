@@ -72,9 +72,9 @@ int stat_message (struct libsmtp_session_struct *mailsession)
 
 int main(void)
 {
-  int test_temp=0, jpegfile_read;
-  FILE *jpegfile;
-  unsigned char *jpegbuffer, temp_string[256], sender[256], subject[256];
+  int test_temp=0, jpegfile_read, textfile_read;
+  FILE *jpegfile, *textfile;
+  unsigned char *jpegbuffer, *textbuffer, temp_string[256], sender[256], subject[256];
   unsigned char server[256], to[256];
   
   /* This struct holds all session data. You need one per mail server
@@ -133,7 +133,13 @@ int main(void)
     return 1;
   }
   
-  if (!libsmtp_part_new (mainpart, LIBSMTP_MIME_IMAGE, LIBSMTP_MIME_SUB_JPG, LIBSMTP_ENC_BASE64, LIBSMTP_CHARSET_NOCHARSET, "Test MIME Image part", mailsession))
+  if (!libsmtp_part_new (mainpart, LIBSMTP_MIME_IMAGE, LIBSMTP_MIME_SUB_XPIXMAP, LIBSMTP_ENC_BASE64, LIBSMTP_CHARSET_NOCHARSET, "Test MIME Image part", mailsession))
+  {
+    printf ("Error adding part: %s\n", libsmtp_strerr (mailsession));
+    return 1;
+  }
+ 
+  if (!libsmtp_part_new (mainpart, LIBSMTP_MIME_TEXT, LIBSMTP_MIME_SUB_PLAIN, LIBSMTP_ENC_7BIT, LIBSMTP_CHARSET_USASCII, "Test MIME long text part", mailsession))
   {
     printf ("Error adding part: %s\n", libsmtp_strerr (mailsession));
     return 1;
@@ -147,10 +153,17 @@ int main(void)
  
   printf ("Parts added.\n");
 
-  /* Lets read the JPEG file we need to test Base64 encoding */
-  if (!(jpegfile=fopen("../gnu-head-sm.jpg", "r")))
+  /* Lets read the XPM file we need to test Base64 encoding */
+  if (!(jpegfile=fopen("../gnu-head-sm.xpm", "r")))
   {
-    printf ("Error reading JPG file.\n");
+    printf ("Error reading XPM file.\n");
+    return 1;
+  }
+  
+  /* Lets read the long text file (debug) */
+  if (!(textfile=fopen("testfile", "r")))
+  {
+    printf ("Error reading long text file.\n");
     return 1;
   }
 
@@ -222,7 +235,9 @@ int main(void)
 
   printf ("Second part sent.\n");
 
-  /* This will switch to the third body part */
+
+
+  /* This will switch to the jpeg body part */
   if (libsmtp_part_next (mailsession))
   {
     stat_message (mailsession);
@@ -233,13 +248,14 @@ int main(void)
   
   /* We need to read the jpeg file */
   
-  jpegbuffer=malloc (4098);
+  jpegbuffer=malloc (4097);
+  bzero (jpegbuffer, 4097);
   
-  /* Read the file in blocks of 300 byte */
-  while ((jpegfile_read = fread (jpegbuffer, 1, 300, jpegfile)))
+  /* Read the file in 4k blocks */
+  while ((jpegfile_read = fread (jpegbuffer, 1, 1024, jpegfile)))
   {
     /* Then we send each chunk */
-    if (libsmtp_part_send (jpegbuffer, jpegfile_read-1, mailsession))
+    if (libsmtp_part_send (jpegbuffer, jpegfile_read, mailsession))
     {
       stat_message (mailsession);
       return mailsession->ErrorCode;
@@ -250,6 +266,35 @@ int main(void)
   free (jpegbuffer);
 
   printf ("Third part sent.\n");  
+
+  /* This will switch to the text body part */
+  if (libsmtp_part_next (mailsession))
+  {
+    stat_message (mailsession);
+    return mailsession->ErrorCode;
+  }
+
+  printf ("Now in third body part.\n");
+  
+  /* We need to read the text file */
+  
+  textbuffer=malloc (4096);
+  
+  /* Read the file in 4k blocks */
+  while ((textfile_read = fread (textbuffer, 1, 4096, textfile)))
+  {
+    /* Then we send each chunk */
+    if (libsmtp_part_send (textbuffer, textfile_read, mailsession))
+    {
+      stat_message (mailsession);
+      return mailsession->ErrorCode;
+    }
+  }
+  
+  fclose (textfile);
+  free (textbuffer);
+
+  printf ("Third part sent.\n");
 
   /* This will switch to the next body part */
   if (libsmtp_part_next (mailsession))

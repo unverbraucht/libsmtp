@@ -1,0 +1,6 @@
+Name: libsmtp
+Description: Smtp Library
+Version: 0.8
+Requires: glib
+Libs: -L/usr/local/lib -lsmtp
+Cflags: -I/usr/local/include/libsmtp

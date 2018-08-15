@@ -1,3 +1,27 @@
+0.9   * Added numerous missing LIBSMTP_NOERR returns in many functions,
+        thanks to Ed Goforth <e.goforth@computer.org> and an anonymous bug
+        report.
+
+      * An RFC822 compliant Date: header was added by Ed Goforth
+        <e.goforth@computer.org>.
+
+      * CC and BCC recipients weren't working due to a really stupid bug!!
+        Thanks to Ed Goforth <e.goforth@computer.org> and Alessandro
+        ORLANDI <alessandro.orlandi@ribesinformatica.it> for the fixes.
+
+      * Some definitions in the header files added to make them C++
+        compatible. Thanks to Jan Karis <jan.karis@gmx.de>.
+
+      * Missing newline after the Content-Transfer-Encoding field caused it
+        to be swallowed by the MUA or MTA. Thanks to Jan Karis
+        <jan.karis@gmx.de> for the fix.
+
+      * libsmtp.pc and libsmtp_mime.pc added for Solaris. Thanks to Ali
+        BASEL <alib@sabanciuniv.edu> for them.
+
+      * It really helps to use the mail server that we asked for in the
+        examples, instead of just silently ignoring it :)
+
 0.8	* Some minor quirks in examples fixed (thanks to Asbjorn Pettersen)
 
 	* Removed unnecessary documentation

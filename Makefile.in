@@ -1,6 +1,5 @@
 SHELL = /bin/sh
-VPATH = @srcdir@
-subdirs = @subdirs@
+VPATH = @srcdir@ subdirs = @subdirs@
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
@@ -10,17 +9,13 @@ bindir = $(exec_prefix)/bin
 infodir = $(prefix)/info
 libdir = $(prefix)/lib/gnudl
 mandir = $(prefix)/man/man1
+# subdirs = smtp mime examples
 subdirs = @subdirs@
-ifeq (@with_mime@,yes)
-  install_subdirs = smtp mime
-else
-  install_subdirs = smtp
-endif
 
 CC = @CC@
 CPPFLAGS = @CPPFLAGS@
 CFLAGS = $(CPPFLAGS) @CFLAGS@
-LDFLAGS = `glib-config --libs` @LDFLAGS@
+LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 INSTALL = @INSTALL@
 
@@ -31,21 +26,10 @@ all:
 	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
 	done && test -z "$$fail"
 
-
 install:
-	@for dir in ${install_subdirs}; do \
+	@for dir in ${subdirs}; do \
 	  (cd $$dir && $(MAKE) install) \
 	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
-	done && test -z "$$fail"
-	$(INSTALL) include/libsmtp.h $(prefix)/include
-ifeq (@with_mime@,yes)
-	$(INSTALL) include/libsmtp_mime.h $(prefix)/include
-endif	
-
-uninstall:
-	@for dir in ${subdirs}; do \
-	(cd $$dir && $(MAKE) uninstall) \
-	|| case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
 	done && test -z "$$fail"
 clean:
 	/bin/rm -f *~
