@@ -1,3 +1,12 @@
+libsmtp enables developers to send mail directly via SMTP from a program.
+It is designed to be flexible, easy to use and have a small code size (embedded linux)
+and is licensed under the LGPL, so it can be included within closed sourced
+applications, too. libsmtp has been tested under Linux and NetBSD, but
+should compile on all recent Unixes and maybe even Windows.
+
+It can send mail to multiple recipients in one go, and supports sending to CC and
+BCC recipients too. The development version has (wobbly) support for
+attachments (this being multiple body parts), different character sets and transport encodings.
 
 This is a small C library that allow direct SMTP connections conforming to
 RFC 822. It is designed for security and simplicity. It is a complete
