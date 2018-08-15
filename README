@@ -1,54 +1,25 @@
 
 This is a small C library that allow direct SMTP connections conforming to
-RFC 822. It is designed for security and simplicity. It has tracelog
-functionality (logging) and provides detailed error codes.
+RFC 822. It is designed for security and simplicity. It is a complete
+rewrite of libsmtp-0.7.5, and bears no similarity to it. Libsmtp is designed
+to be small enough to be used in an embedded environment, and flexible
+enough to be used as underlying communications infrastructure even for MTAs
+(though it is still a bit away from that goal at the moment). It is
+licensed under the LGPL, which means it can be used in closed source
+programs, too.
 
-It doesn't support multiple recipients at the moment, though, and it could
-be better documented :-)
+You can find updates at http://libsmtp.berlios.de
 
-You can find updates (eventually) at http://www.obsidian.de/software/
+Please note that this a development version. Please read the BUGS and TODO
+files in the doc directory. The next stable release will be 0.8.
+libsmtp-0.7.5 and below are deprecated.
 
-There are only 3 functions:
+See the file doc/API and doc/MIME for programming information. The source code
+and the test application are quite freely documented, too. Any patches, bug
+reports and fixes and general comments welcome. Mailing list, forum, patch
+manager etc. are at http://developer.berlios.de/projects/libsmtp/
 
+Berlios is great!! Its sorta like sourceforge.net, but I like it because it
+isn't so crowded :)
 
-int libsmtp_errno (void)
-
- returns the last errno that occured in libsmtp. Useful for real debugging.
-
-
-void libsmtp_set_debug (int flag, char *buffer)
-
- with this function you can enable the tracing or logging function. Flag
-should be either 0 (off) or 1 (on). If you enable logging, you should
-provide a pointer to a memory buffer of at least 4k size in buffer.
-
-
-int libsmtp_sendmail (char *from, char *to, char *mailserver, char *subject, char
-  *body)
-
- sends mail (what else ;-). The strings from and to can be in any
-RFC822-compliant type, eg:
-
-Kevin Read <kread@innnet.de>
-"Kevin Read" <kread@innnet.de>
-<kread@innnet.de>
-kread@innnet.de
-
-Mailserver is the mailserver to which you send mail. No option to specify
-the port at the moment...
-
-Subject should be self-explanatory
-
-Body too, actually..
-
-From, to and mailhost are constrained to 200 octets length each, subject to
-300. I think thats the right way to do it, if you don't like it, remove it.
-Use the source, luke!
-
-It returns the libsmtp-internal error code (see the beginning of libsmtp for
-details).
-
-
-Have fun. Comments et al to <kread@innnet.de>
-
-		Kevin Read 26.11.2000
+Kevin <obsidian@berlios.de>

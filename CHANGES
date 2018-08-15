@@ -1,0 +1,55 @@
+0.7.9 * Base64 and Quoted Printable encoding added
+
+      * Attachment description is included now, too
+
+      * Updated documentation
+
+
+0.7.8 * Included MIME support. You can choose a MIME type for your body
+
+      * Many new functions concerning MIME support added
+
+      * MIME stuff still not quite reliable. Limitations: can't encode in
+        base64 or quoted printable ATM. Please read doc/MIME.
+
+0.7.7 * This is a total rewrite
+
+      * Everything is better now. Really. :)
+
+      * Project hosted on libsmtp.berlios.de now
+
+      * Docmentation is quite good now, see doc/API
+
+      * Support for multiple recipients
+
+      * Support for Carbon Copy and Blind Carbon Copy
+
+      * I guess its thread-safe now
+
+      * Hooks for TSL there
+ 
+      * The project is under the LGPL now
+
+
+0.7.5 * Cleaned up the code, many small bugs fixed
+    
+    * Integrated code cleanups and optimizations from Sean Reifschneider
+    <jafo@tummy.com>. Thanks!
+    
+    * Tested on NetBSD
+    
+    * Integrated handling of 8 bit data. Now if a server can't handle 8bit
+      data, the function just fails, otherwise it is transmitted correctly.
+      
+    * Functions that check for 8 bit user data added.
+    
+    * Functions that output error strings added (sorta strerr)
+    
+    * Test application added. Sends me a mail. Beware!
+    
+    * Some changes to the tracelog code to don't overwrite the end of
+      the string. But I'm not quite sure this is right, so you better
+      choose larger tracelogs (about 2k should suffice)
+    
+
+0.7 Initial release

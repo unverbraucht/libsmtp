@@ -1,0 +1,11 @@
+
+All these examples rely on a host called mail that accepts mail from you. If
+this is not the case then please change the occurence of the word "mail" to
+the hostname of your mailserver, i.e. in smtpmail.c
+
+  if (libsmtp_connect ("mail", 0, 0, mailsession))
+
+change it to
+
+  if (libsmtp_connect ("mail.myprovider.com", 0, 0, mailsession))
+
