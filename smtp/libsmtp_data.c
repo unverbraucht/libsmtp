@@ -30,7 +30,7 @@ Thu Aug 16 2001 */
 #include <string.h>
 #include "../config.h"
 
-#include "libsmtp.h"
+#include "../include/libsmtp.h"
 
 
 /* This function returns a pointer to an allocated libsmtp_session_struct

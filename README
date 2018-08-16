@@ -1,3 +1,7 @@
+NOTICE:
+This project has been rescued over from now-defunct berlios.de and is from 2001. It
+might or might not still work.
+
 libsmtp enables developers to send mail directly via SMTP from a program.
 It is designed to be flexible, easy to use and have a small code size (embedded linux)
 and is licensed under the LGPL, so it can be included within closed sourced

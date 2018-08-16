@@ -29,7 +29,7 @@ Thu Aug 16 2001 */
 #include <string.h>
 #include <stdio.h>
 
-#include "libsmtp.h"
+#include "../include/libsmtp.h"
 
 /* Ed Goforth <e.goforth@computer.org> */
 /* Have to include time.h to get time_t, time(2) and localtime(3) */

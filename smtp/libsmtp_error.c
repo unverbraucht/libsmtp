@@ -27,10 +27,10 @@ Thu Aug 16 2001 */
 #include <stdio.h>
 
 #include "../config.h"
-#include "libsmtp.h"
+#include "../include/libsmtp.h"
 
 #ifdef WITH_MIME
-  #include "libsmtp_mime.h"
+  #include "../include/libsmtp_mime.h"
 #endif
 
 const char *libsmtp_strerr_strings_fatal[] = {

@@ -37,8 +37,8 @@ Thu Aug 16 2001 */
 
 #include "../config.h"
 
-#include "libsmtp.h"
-#include "libsmtp_mime.h"
+#include "../include/libsmtp.h"
+#include "../include/libsmtp_mime.h"
 
 
 /* We declare some global variables *yuck* */
@@ -72,9 +72,11 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
          struct libsmtp_session_struct *libsmtp_session)
 {
   int libsmtp_int_temp, libsmtp_int_counter;
+  
+  char* old_buffer = libsmtp_session->buffer;
 
   /* These are the input buffer and the output buffer */
-  unsigned char libsmtp_int_igroup[3], libsmtp_int_ogroup[2056];
+  unsigned char libsmtp_int_igroup[3], *libsmtp_int_ogroup = &libsmtp_session->buffer;
   unsigned char libsmtp_int_char;
   int libsmtp_int_finished=0, libsmtp_int_outbytes=0, libsmtp_int_width=0;
   /* This points into the data stream to the byte we are reading ATM */
@@ -142,8 +144,9 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
       if (libsmtp_int_outbytes >=2048)
       {
         libsmtp_int_ogroup[libsmtp_int_outbytes]='\0';
-        if (libsmtp_int_send_body (libsmtp_int_ogroup, libsmtp_int_outbytes, libsmtp_session))
+        if (libsmtp_int_send_body (libsmtp_int_outbytes, libsmtp_session)) {
           return LIBSMTP_ERRORSENDFATAL;
+        }
         
         #ifdef LIBSMTP_DEBUG
           printf ("libsmtp_send_base64: out: %s\n", libsmtp_int_ogroup);
@@ -160,8 +163,9 @@ int libsmtp_int_send_base64 (char *libsmtp_int_data, unsigned long int libsmtp_i
   libsmtp_int_ogroup[libsmtp_int_outbytes++]='\r';
   libsmtp_int_ogroup[libsmtp_int_outbytes++]='\n';
   libsmtp_int_ogroup[libsmtp_int_outbytes]='\0';
-  if (libsmtp_int_send_body (libsmtp_int_ogroup, libsmtp_int_outbytes, libsmtp_session))
+  if (libsmtp_int_send_body (libsmtp_int_outbytes, libsmtp_session)) {
     return LIBSMTP_ERRORSENDFATAL;
+  }
    
   #ifdef LIBSMTP_DEBUG
     printf ("libsmtp_send_base64: out: %s\n", libsmtp_int_ogroup);

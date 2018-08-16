@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-Kevin Read <obsidian@berlios.de>
+Kevin Read <me@kevin-read.com>
 Thu Aug 16 2001 */
 
 /* This will only be included when MIME is enabled */
@@ -32,8 +32,8 @@ Thu Aug 16 2001 */
 
 #include "../config.h"
 
-#include "libsmtp.h"
-#include "libsmtp_mime.h"
+#include "../include/libsmtp.h"
+#include "../include/libsmtp_mime.h"
 
 
 /* #define LIBSMTP_DEBUG */

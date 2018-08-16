@@ -33,7 +33,7 @@ Thu Aug 16 2001 */
 #include <string.h>
 
 #include "../config.h"
-#include "libsmtp.h"
+#include "../include/libsmtp.h"
 
 
 int libsmtp_connect (char *libsmtp_server, unsigned int libsmtp_port, unsigned int libsmtp_flags, struct libsmtp_session_struct *libsmtp_session)

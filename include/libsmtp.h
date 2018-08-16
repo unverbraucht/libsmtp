@@ -6,6 +6,10 @@
 
 #define LIB_SMTP_H
 
+#include <gmodule.h>
+
+#include <stdint.h>
+
 #define LIBSMTP_BUFFER_SIZE	4096
 
 /* These flags show what the server can do */
